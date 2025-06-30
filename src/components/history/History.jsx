@@ -140,7 +140,7 @@ const History = () => {
 
   const handleWhatsappClick = (order) => {
     const customerPhoneNumber = order.phone; // Correct field to access phone number
-    const message = `We hope you had a delightful order experience with us. Your feedback is incredibly valuable as we continue to enhance our services. How did you enjoy your meal? We’d love to hear your thoughts.\nTeam: Urban Pizzeria`;
+    const message = `We hope you had a delightful order experience with us. Your feedback is incredibly valuable as we continue to enhance our services. How did you enjoy your meal? We’d love to hear your thoughts.\nTeam: Apna Pizza`;
     // Create the WhatsApp URL to send the message
     const whatsappUrl = `https://wa.me/+91${customerPhoneNumber}?text=${encodeURIComponent(
       message
@@ -338,6 +338,30 @@ const History = () => {
                             <td>{product.price * product.quantity}</td>
                           </tr>
                         ))}
+
+                        {/* DELIVERY ROW */}
+                        {order.delivery > 0 && (
+                          <tr>
+                            <td colSpan={4} style={{textAlign: "right"}}>
+                              <strong>Delivery Charge:</strong>
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              <strong>+{order.delivery}</strong>
+                            </td>
+                          </tr>
+                        )}
+
+                        {/* DISCOUNT ROW */}
+                        {order.discount > 0 && (
+                          <tr>                           
+                            <td colSpan={4} style={{textAlign: "right"}}>
+                              <strong>Discount:</strong>
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              <strong>-{order.discount}</strong>
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   )}

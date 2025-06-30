@@ -29,8 +29,8 @@ const CustomerDetail = () => {
   const [productsToSend, setproductsToSend] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [orders, setOrders] = useState([]);
-  const getdeliveryCharge = localStorage.getItem("deliveryCharge");
-  const deliveryChargeAmount = parseFloat(getdeliveryCharge) || 0;
+  const deliveryChargeAmount = parseFloat(deliveryCharge) || 0;
+
   // State to hold all saved customers for auto-fill
   const [savedCustomers, setSavedCustomers] = useState([]);
   // State to hold suggestions based on current phone input
@@ -133,7 +133,6 @@ const CustomerDetail = () => {
   const { discountValue, netTotal } = computeTotals();
 
   const handleSendToWhatsApp = () => {
-
     // Reuse your computeTotals logic so WhatsApp matches the printed invoice
     const { base, discountValue, netTotal } = computeTotals();
     // base is itemTotal + deliveryChargeAmount
@@ -156,23 +155,23 @@ const CustomerDetail = () => {
 
     const orderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  // Build the WhatsApp message in the same order as the invoice
-  let msg = `Order-ID: *${orderId}*\n`;
-  msg += `Order-Type: *${orderType}*\n`
-   msg += `Amount: *${netTotal.toFixed(2)}*`;
-   if (customerPhone)   msg += `\nPhone: *${customerPhone}*`;
-   if (customerName)    msg += `\nName: *${customerName}*`;
-   if (customerAddress) msg += `\nAddress: *${customerAddress}*`;
-   msg += `\n\n----------ITEMS----------\n${productDetails}`;
-   // Totals block
-   if (serviceChargeText) {
-     msg += `\n\n${serviceChargeText}`;
-   }
+    // Build the WhatsApp message in the same order as the invoice
+    let msg = `Order-ID: *${orderId}*\n`;
+    msg += `Order-Type: *${orderType}*\n`;
+    msg += `Amount: *${netTotal.toFixed(2)}*`;
+    if (customerPhone) msg += `\nPhone: *${customerPhone}*`;
+    if (customerName) msg += `\nName: *${customerName}*`;
+    if (customerAddress) msg += `\nAddress: *${customerAddress}*`;
+    msg += `\n\n----------ITEMS----------\n${productDetails}`;
+    // Totals block
+    if (serviceChargeText) {
+      msg += `\n\n${serviceChargeText}`;
+    }
 
-   if (discountValue > 0) {
-     msg += `\nDiscount  *–${discountValue.toFixed(2)}*`;
-   }
-   const message = encodeURIComponent(msg);
+    if (discountValue > 0) {
+      msg += `\nDiscount  *–${discountValue.toFixed(2)}*`;
+    }
+    const message = encodeURIComponent(msg);
 
     const phoneNumber = customerPhone;
 
@@ -216,13 +215,14 @@ const CustomerDetail = () => {
       id: orderId,
       products: productsToSend,
       totalAmount: netTotal,
-      discountApplied: discountValue,
       name: customerName,
       phone: customerPhone,
       address: customerAddress,
+      delivery: deliveryCharge,
+      discount: discountAmount,
       timestamp: new Date().toISOString(),
     };
-
+    console.log("order created", order);
     const customerDataObject = {
       id: orderId,
       name: customerName,
@@ -507,7 +507,7 @@ const CustomerDetail = () => {
       >
         {/* {logoAvailable && (
           <img
-            src="/logo5.jpg"
+            src="/logo.jpg"
             alt="Logo5"
             width={150}
             className="logo"
@@ -515,7 +515,7 @@ const CustomerDetail = () => {
           />
         )} */}
         <h1 style={{ textAlign: "center", margin: 0, fontSize: "35px" }}>
-         Apna Pizza
+          Apna Pizza
         </h1>
         <p
           style={{
@@ -526,11 +526,7 @@ const CustomerDetail = () => {
           }}
         >
           Karah Sahib Adda
-        </p>
-        <p style={{ textAlign: "center", margin: 0, fontSize: "14px" }}>
-          +91 97298-12356
-        </p>
-        <p style={{ textAlign: "center", margin: 0, fontSize: "14px" }}>
+          <br />
           +91 99969-99799
         </p>
         <hr />
@@ -544,7 +540,7 @@ const CustomerDetail = () => {
             {/* Random 6-digit bill number */}
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
-          OrderType&nbsp;:&nbsp;&nbsp; {orderType}
+            OrderType&nbsp;:&nbsp;&nbsp; {orderType}
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
             Date:&nbsp;&nbsp;&nbsp;&nbsp;
@@ -569,7 +565,8 @@ const CustomerDetail = () => {
           )}
           {customerPhone && (
             <p style={{ fontSize: "12px", margin: "0" }}>
-              Phone&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{customerPhone}
+              Phone&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              {customerPhone}
             </p>
           )}
           {customerAddress && (
@@ -622,7 +619,7 @@ const CustomerDetail = () => {
             </div>
             <div className="total">
               <p style={{ margin: "0" }}>Service Charge:</p>
-              <p style={{ margin: "0" }}>₹{getdeliverycharge.toFixed(2)}</p>
+              <p style={{ margin: "0" }}>+{getdeliverycharge.toFixed(2)}</p>
             </div>
           </>
         )}
