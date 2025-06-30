@@ -505,7 +505,7 @@ const CustomerDetail = () => {
         style={{ display: "none" }}
       >
         <h3 style={{ textAlign: "center" }}>
-          {orderType === "delivery" ? "Delivery" : "Dine-In"}
+          {orderType}
         </h3>
         {logoAvailable && (
           <img

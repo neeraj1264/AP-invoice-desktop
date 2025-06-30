@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./History.css";
 import { FaArrowLeft, FaWhatsapp } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { fetchOrders, removeOrder, sendorder } from "../../api";
+import { BASE_URL, fetchOrders, removeOrder, sendorder } from "../../api";
 import Header from "../header/Header";
 import { clearStore, deleteItem, getAll, saveItems } from "../../DB";
 
@@ -16,7 +16,6 @@ const History = () => {
   const [showRemoveBtn, setShowRemoveBtn] = useState(false);
   const navigate = useNavigate();
   const [syncing, setSyncing] = useState(false);
-  const BASE_URL = "https://aus-invoice-backend.vercel.app/api";
 
   // Show remove button on long press
   let pressTimer;

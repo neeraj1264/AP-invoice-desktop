@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
+import { BASE_URL } from './api';
 
-const PING_URL = "https://aus-invoice-backend.vercel.app/api/categories";
 let isOnline = true; // Shared module state
 let listeners = new Set(); // All component listeners
 
 const checkBackend = async () => {
   try {
-    const res = await fetch(PING_URL, { method: "HEAD" });
+    const res = await fetch(`${BASE_URL}/categories`, { method: "HEAD" });
     const newStatus = res.ok;
     if (newStatus !== isOnline) {
       isOnline = newStatus;

@@ -53,7 +53,9 @@ const Invoice = () => {
   const [dineInBills, setDineInBills] = useState(
     () => JSON.parse(localStorage.getItem("dineInKotData")) || []
   );
-
+  const [takeawayBills, setTakeawayBills] = useState(
+    () => JSON.parse(localStorage.getItem("takeawayKotData")) || []
+  );
   // tracks which list to show in the modal
   const [modalType, setModalType] = useState("delivery"); // "delivery" or "dine-in"
 
@@ -83,11 +85,27 @@ const Invoice = () => {
     }
     setIsChecking(false);
   };
-  // Update `now` every second for countdown
+
   useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const interval = setInterval(() => setNow(Date.now()), 1000);
+  return () => clearInterval(interval);
+}, []);
+
+  const EXPIRY_MS = 2 * 60 * 60 * 1000;
+
+useEffect(() => {
+  const cleanUp = (bills, setBills, storageKey) => {
+    const fresh = bills.filter(order => now - order.timestamp < EXPIRY_MS);
+    if (fresh.length !== bills.length) {
+      setBills(fresh);
+      localStorage.setItem(storageKey, JSON.stringify(fresh));
+    }
+  };
+
+  cleanUp(deliveryBills, setDeliveryBills, "deliveryKotData");
+  cleanUp(dineInBills,  setDineInBills,  "dineInKotData");
+  cleanUp(takeawayBills, setTakeawayBills, "takeawayKotData");
+}, [now, deliveryBills, dineInBills, takeawayBills]);
 
   // Format milliseconds to HH:mm:ss
   const formatRemaining = (ms) => {
@@ -173,6 +191,10 @@ const Invoice = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [categories]);
 
+  useEffect(()=>{
+     localStorage.removeItem("productsToSend");
+      setProductsToSend([]);
+  },[])
   useEffect(() => {
     const fromCustomerDetail = location.state?.from === "customer-detail";
     if (fromCustomerDetail) {
@@ -440,7 +462,6 @@ const Invoice = () => {
     }
   };
 
-
   // Helper function to calculate total price
   const calculateTotalPrice = (products = []) => {
     return products.reduce(
@@ -472,6 +493,13 @@ const Invoice = () => {
     setIsCategoryVisible((prev) => !prev); // Toggle visibility
   };
 
+  const getCurrentBills = () => {
+    if (modalType === "delivery") return deliveryBills;
+    if (modalType === "dine-in") return dineInBills;
+    if (modalType === "takeaway") return takeawayBills;
+    return [];
+  };
+
   // New: KOT (Kitchen Order Ticket) print handler
   const handleKot = () => {
     // Append current order snapshot
@@ -486,10 +514,14 @@ const Invoice = () => {
       const next = [...deliveryBills, kotEntry];
       setDeliveryBills(next);
       localStorage.setItem("deliveryKotData", JSON.stringify(next));
-    } else {
+    } else if (orderType === "dine-in") {
       const next = [...dineInBills, kotEntry];
       setDineInBills(next);
       localStorage.setItem("dineInKotData", JSON.stringify(next));
+    } else if (orderType === "takeaway") {
+      const next = [...takeawayBills, kotEntry];
+      setTakeawayBills(next);
+      localStorage.setItem("takeawayKotData", JSON.stringify(next));
     }
 
     // Clear current productsToSend
@@ -502,39 +534,39 @@ const Invoice = () => {
       return;
     }
 
-    const header = `
-  <div style="text-align:center; font-weight:700; margin-bottom:8px;">
-    ${orderType === "delivery" ? "Delivery" : "Dine-In"}
-  </div>
-`;
+//     const header = `
+//   <div style="text-align:center; font-weight:700; margin-bottom:8px;">
+//     ${orderType === "delivery" ? "Delivery" : "Dine-In"}
+//   </div>
+// `;
 
-    const printContent = header + printArea.innerHTML;
-    const win = window.open("", "", "width=600,height=400");
-    const style = `<style>
-  @page { size: 48mm auto; margin:0; }
-  @media print {
-    body{ width:48mm; margin:0; padding:4mm; font-size:1rem; }
-    .product-item{ display:flex; justify-content:space-between; margin-bottom:1rem;}
-    .hr{ border:none; border-bottom:1px solid #000; margin:2px 0;}
-    .invoice-btn{ display:none; }
-  }
-</style>`;
+//     const printContent = header + printArea.innerHTML;
+//     const win = window.open("", "", "width=600,height=400");
+//     const style = `<style>
+//   @page { size: 48mm auto; margin:0; }
+//   @media print {
+//     body{ width:48mm; margin:0; padding:4mm; font-size:1rem; }
+//     .product-item{ display:flex; justify-content:space-between; margin-bottom:1rem;}
+//     .hr{ border:none; border-bottom:1px solid #000; margin:2px 0;}
+//     .invoice-btn{ display:none; }
+//   }
+// </style>`;
 
-    win.document.write(
-      `<html>
-      <head>
-      <title>KOT Ticket</title>
-     ${style}
-        </head>
-        <body>
-        ${printContent}
-        </body>
-        </html>`
-    );
-    win.document.close();
-    win.focus();
-    win.print();
-    win.close();
+//     win.document.write(
+//       `<html>
+//       <head>
+//       <title>KOT Ticket</title>
+//      ${style}
+//         </head>
+//         <body>
+//         ${printContent}
+//         </body>
+//         </html>`
+//     );
+//     win.document.close();
+//     win.focus();
+//     win.print();
+//     win.close();
   };
 
   const handleCreateInvoice = (orderItems, type) => {
@@ -551,25 +583,33 @@ const Invoice = () => {
       const updated = deliveryBills.filter((_, i) => i !== idx);
       setDeliveryBills(updated);
       localStorage.setItem("deliveryKotData", JSON.stringify(updated));
-    } else {
+    } else if (modalType === "dine-in") {
       const updated = dineInBills.filter((_, i) => i !== idx);
       setDineInBills(updated);
       localStorage.setItem("dineInKotData", JSON.stringify(updated));
+    } else if (modalType === "takeaway") {
+      const updated = takeawayBills.filter((_, i) => i !== idx);
+      setTakeawayBills(updated);
+      localStorage.setItem("TakeAwayKotData", JSON.stringify(updated));
     }
   };
-  
+
   const editKot = (order, idx) => {
     // Remove from the correct list
     if (modalType === "delivery") {
       const updated = deliveryBills.filter((_, i) => i !== idx);
       setDeliveryBills(updated);
       localStorage.setItem("deliveryKotData", JSON.stringify(updated));
-    } else {
+    } else if (modalType === "dine-in") {
       const updated = dineInBills.filter((_, i) => i !== idx);
       setDineInBills(updated);
       localStorage.setItem("dineInKotData", JSON.stringify(updated));
+    } else if (modalType === "takeaway") {
+      const updated = takeawayBills.filter((_, i) => i !== idx);
+      setTakeawayBills(updated);
+      localStorage.setItem("TakeAwayKotData", JSON.stringify(updated));
     }
-  
+
     // Load into current products
     setProductsToSend(order);
     localStorage.setItem("productsToSend", JSON.stringify(order));
@@ -769,11 +809,8 @@ const Invoice = () => {
                     <div style={{ width: "50%", textAlign: "center" }}>
                       <span>Name</span>
                     </div>
-                    <div style={{ width: "10%", textAlign: "center" }}>
+                    <div style={{ width: "20%", textAlign: "center" }}>
                       <span>Qty</span>
-                    </div>
-                    <div style={{ width: "7%", textAlign: "center" }}>
-                      <span>x</span>
                     </div>
                     <div style={{ width: "15%", textAlign: "right" }}>
                       <span>Price</span>
@@ -793,11 +830,37 @@ const Invoice = () => {
                       <div style={{ width: "50%" }}>
                         <span>{product.name}</span>
                       </div>
-                      <div style={{ width: "10%", textAlign: "center" }}>
-                        <span>{product.quantity}</span>
-                      </div>{" "}
-                      <div style={{ width: "7%", textAlign: "center" }}>
-                        <span>x</span>
+                      <div style={{ width: "20%", textAlign: "center" }}>
+                          <div className="quantity-btn">
+                                                  <button
+                                                    className="icon"
+                                                    onClick={() =>
+                                                      handleQuantityChange(
+                                                        product.name,
+                                                        product.price,
+                                                        -1
+                                                      )
+                                                    }
+                                                    // disabled={product.quantity <= 1}
+                                                  >
+                                                    <FaMinusCircle />
+                                                  </button>
+                                                  <span>
+                                                    {product.quantity}
+                                                  </span>
+                                                  <button
+                                                    className="icon"
+                                                    onClick={() =>
+                                                      handleQuantityChange(
+                                                        product.name,
+                                                        product.price,
+                                                        1
+                                                      )
+                                                    }
+                                                  >
+                                                    <FaPlusCircle />
+                                                  </button>
+                                                </div>
                       </div>{" "}
                       <div style={{ width: "15%", textAlign: "right" }}>
                         <span>{product.price * product.quantity}</span>
@@ -837,11 +900,10 @@ const Invoice = () => {
                   </li>
                   {/* <div style={{ textAlign: "center" }}>{dash}</div> */}
                   <hr className="hr" />
-                  <hr className="hr" style={{marginBottom: "3rem"}}/>
-
+                  <hr className="hr" style={{ marginBottom: "3rem" }} />
                 </ul>
                 <div className="order-type">
-                  {["delivery", "dine-in"].map((type) => (
+                  {["delivery", "dine-in", "takeaway"].map((type) => (
                     <label key={type} className="order-option">
                       <input
                         type="radio"
@@ -850,18 +912,25 @@ const Invoice = () => {
                         checked={orderType === type}
                         onChange={() => setOrderType(type)}
                       />
-                      <span>
-                        {type === "delivery" ? "Delivery" : "Dine-In"}
+                      <span className="option-content">
+                        <em>
+                          {type === "delivery"
+                            ? "Delivery"
+                            : type === "dine-in"
+                            ? "Dine‑In"
+                            : "Takeaway"}
+                        </em>
                       </span>
                     </label>
                   ))}
                 </div>
+
                 <button
                   onClick={handleKot}
                   className="kot-btn"
                   style={{ borderRadius: "0" }}
                 >
-                  <h2> Print Kot </h2>
+                  <h2> Save </h2>
                 </button>
               </>
             </div>
@@ -874,25 +943,38 @@ const Invoice = () => {
         <button onClick={guardAddProduct} className="invoice-kot-btn">
           <h2> + PRODUCT </h2>
         </button>
-
         <button
           onClick={() => openBillsModal("delivery")}
           className="invoice-next-btn"
         >
           <h2>Delivery Bills ({deliveryBills.length})</h2>
         </button>
-
         <button
           onClick={() => openBillsModal("dine-in")}
           className="invoice-next-btn"
         >
           <h2>Dine-In Bills ({dineInBills.length})</h2>
         </button>
+        <button
+          onClick={() => openBillsModal("takeaway")}
+          className="invoice-next-btn"
+        >
+          <h2>Takeaway Bills ({takeawayBills.length})</h2>
+        </button>
       </div>
       {showKotModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>{modalType === "delivery" ? "Delivery" : "Dine-In"} Bills</h3>
+            <h3>
+              {modalType === "delivery"
+                ? "Delivery"
+                : modalType === "dine-in"
+                ? "Dine-In"
+                : "Takeaway"}{" "}
+              Bills
+            </h3>
+            {getCurrentBills().length === 0 && <p>No bills found.</p>}
+
             <button
               className="close-btn"
               onClick={() => setShowKotModal(false)}
@@ -900,58 +982,59 @@ const Invoice = () => {
               <IoClose />
             </button>
             <div className="kot-list">
-              {(modalType === "delivery" ? deliveryBills : dineInBills)
-                .length === 0 && <p>No bills found.</p>}
-              {(modalType === "delivery" ? deliveryBills : dineInBills).map(
-                (order, idx) => {
-                  const remaining =
-                    2 * 60 * 60 * 1000 - (now - order.timestamp);
-                  return (
-                    <div key={idx} className="kot-entry">
-                      <h4 className="kot-timer">
-                        Bill Expire in <span>{formatRemaining(remaining)}</span>
-                      </h4>
-                      <h4>
-                        KOT #{idx + 1}
-                        <span className="kot-date">{order.date}</span>
-                      </h4>
-                      <ul>
-                        {order.items.map((item, i) => (
-                          <>
-                            <li key={i} className="kot-product-item">
-                              <span>
-                                {item.name} x {item.quantity}
-                              </span>
-                              <span>
-                                ₹{(item.price * item.quantity).toFixed(2)}
-                              </span>
-                            </li>
-                          </>
-                        ))}
-                      </ul>
-                      <div className="kot-entry-actions">
-                        <FaTrash
-                          className="del-action-icon action-icon"
-                          size={20}
-                          onClick={() => deleteKot(idx)}
-                        />
-                        <FaEdit
-                          className="edit-action-icon action-icon"
-                          size={20}
-                          onClick={() => editKot(order.items, idx)}
-                        />
-                        <FaFileInvoice
-                          className="invoice-action-icon action-icon"
-                          size={20}
-                          onClick={() =>
-                            handleCreateInvoice(order.items, modalType)
-                          }
-                        />
-                      </div>
+              {getCurrentBills().length === 0 && <p>No bills found.</p>}
+              {(modalType === "delivery"
+                ? deliveryBills
+                : modalType === "dine-in"
+                ? dineInBills
+                : takeawayBills
+              ).map((order, idx) => {
+                const remaining =  EXPIRY_MS - (now - order.timestamp);
+                return (
+                  <div key={idx} className="kot-entry">
+                    <h4 className="kot-timer">
+                      Bill Expire in <span>{formatRemaining(remaining)}</span>
+                    </h4>
+                    <h4>
+                      KOT #{idx + 1}
+                      <span className="kot-date">{order.date}</span>
+                    </h4>
+                    <ul>
+                      {order.items.map((item, i) => (
+                        <>
+                          <li key={i} className="kot-product-item">
+                            <span>
+                              {item.name} x {item.quantity}
+                            </span>
+                            <span>
+                              ₹{(item.price * item.quantity).toFixed(2)}
+                            </span>
+                          </li>
+                        </>
+                      ))}
+                    </ul>
+                    <div className="kot-entry-actions">
+                      <FaTrash
+                        className="del-action-icon action-icon"
+                        size={20}
+                        onClick={() => deleteKot(idx)}
+                      />
+                      <FaEdit
+                        className="edit-action-icon action-icon"
+                        size={20}
+                        onClick={() => editKot(order.items, idx)}
+                      />
+                      <FaFileInvoice
+                        className="invoice-action-icon action-icon"
+                        size={20}
+                        onClick={() =>
+                          handleCreateInvoice(order.items, modalType)
+                        }
+                      />
                     </div>
-                  );
-                }
-              )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

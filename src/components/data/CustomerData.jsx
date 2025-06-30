@@ -131,10 +131,10 @@ export const CustomerData = () => {
                     <p>
                       <strong>Address:</strong> {customer.address}
                     </p>
-                    <p>
+                    {/* <p>
                       <strong>Total Lifetime Spend:</strong> ₹
                       {getLifetimeOrderTotal(customer.phone).toFixed(2)}
-                    </p>
+                    </p> */}
                     {/* Expanded view: display orders grouped by date */}
                     {expandedCustomer === customer.phone && (
                       <div className="customer-orders">
