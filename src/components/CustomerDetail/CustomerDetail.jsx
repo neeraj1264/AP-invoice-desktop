@@ -157,7 +157,8 @@ const CustomerDetail = () => {
     const orderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
 
   // Build the WhatsApp message in the same order as the invoice
-   let msg = `Order: *${orderId}*\n`;
+  let msg = `Order-ID: *${orderId}*\n`;
+  msg += `Order-Type: *${orderType}*\n`
    msg += `Amount: *${netTotal.toFixed(2)}*`;
    if (customerPhone)   msg += `\nPhone: *${customerPhone}*`;
    if (customerName)    msg += `\nName: *${customerName}*`;
@@ -465,7 +466,7 @@ const CustomerDetail = () => {
           placeholder="Discount (₹ amount)"
         />
       </div>
-      <div className="cust-inputs">
+      {/* <div className="cust-inputs">
         <select
           value={discountPercent}
           onChange={(e) => {
@@ -495,7 +496,7 @@ const CustomerDetail = () => {
           <option value="95">95%</option>
           <option value="100">100%</option>
         </select>
-      </div>
+      </div> */}
 
       {/* mobile print content */}
       <div
@@ -504,10 +505,7 @@ const CustomerDetail = () => {
         ref={invoiceRef}
         style={{ display: "none" }}
       >
-        <h3 style={{ textAlign: "center" }}>
-          {orderType}
-        </h3>
-        {logoAvailable && (
+        {/* {logoAvailable && (
           <img
             src="/logo5.jpg"
             alt="Logo5"
@@ -515,25 +513,25 @@ const CustomerDetail = () => {
             className="logo"
             onError={() => setLogoAvailable(false)}
           />
-        )}
-        <h1 style={{ textAlign: "center", margin: 0, fontSize: "25px" }}>
-          Australian Bite
+        )} */}
+        <h1 style={{ textAlign: "center", margin: 0, fontSize: "35px" }}>
+         Apna Pizza
         </h1>
         <p
           style={{
             textAlign: "center",
-            marginTop: "1rem",
+            marginTop: 0,
             fontSize: "14px",
             padding: "0 2px",
           }}
         >
-          Ambarsari Farm, Kurukshetra Road Pehowa, (136-128)
+          Karah Sahib Adda
         </p>
         <p style={{ textAlign: "center", margin: 0, fontSize: "14px" }}>
-          +91 74043-39777
+          +91 97298-12356
         </p>
         <p style={{ textAlign: "center", margin: 0, fontSize: "14px" }}>
-          +91 74043-38777
+          +91 99969-99799
         </p>
         <hr />
         <h2 style={{ textAlign: "center", margin: 0, fontSize: "20px" }}>
@@ -544,6 +542,9 @@ const CustomerDetail = () => {
             Bill No:&nbsp;&nbsp;
             {`#${Math.floor(1000 + Math.random() * 9000)}`}{" "}
             {/* Random 6-digit bill number */}
+          </p>
+          <p style={{ fontSize: "12px", margin: "0" }}>
+          OrderType&nbsp;:&nbsp;&nbsp; {orderType}
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
             Date:&nbsp;&nbsp;&nbsp;&nbsp;
@@ -563,17 +564,17 @@ const CustomerDetail = () => {
 
           {customerName && (
             <p style={{ fontSize: "12px", margin: "0" }}>
-              Customer:&nbsp;{customerName}
+              Customer&nbsp;:&nbsp;{customerName}
             </p>
           )}
           {customerPhone && (
             <p style={{ fontSize: "12px", margin: "0" }}>
-              Phone:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{customerPhone}
+              Phone&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{customerPhone}
             </p>
           )}
           {customerAddress && (
             <p style={{ fontSize: "12px", margin: "0 0 1rem 0" }}>
-              Address:&nbsp;&nbsp;&nbsp;&nbsp;{customerAddress}
+              Address&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;{customerAddress}
             </p>
           )}
         </div>
@@ -634,26 +635,6 @@ const CustomerDetail = () => {
           </div>
         )}
         <p className="totalAmount">Net Total: ₹{netTotal.toFixed(2)}</p> <hr />
-        {qrAvailable && (
-          <>
-            <div
-              style={{
-                textAlign: "center",
-                fontWeight: "bold",
-                fontSize: "1rem",
-              }}
-            >
-              {" "}
-              Order Online
-            </div>
-            <img
-              src="/qr.png"
-              alt="QR Code"
-              style={{ display: "flex", margin: "2px auto" }}
-              onError={() => setQrAvailable(false)}
-            />
-          </>
-        )}
         <div
           style={{
             textAlign: "center",
