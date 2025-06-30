@@ -1,0 +1,127 @@
+.back-arrow-c {
+  position: fixed;
+  color: white;
+  font-size: 1.4rem !important;
+  top: 0.6rem;
+  left: 0.6rem;
+}
+
+.Customer-header {
+  text-align: center;
+  background: var(--bg);
+  color: white;
+  font-size: 1.4rem;
+  margin: 0;
+  padding: 0.5rem;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 2px 2px 6px 2px black;
+  margin-bottom: 1rem;
+}
+
+.cust-inputs input , .cust-inputs select{
+  width: 90vw;
+  margin: 0.5rem auto;
+  padding: 0.75rem;
+  box-sizing: border-box; 
+  border-radius: 1rem;
+  display: flex;
+}
+
+.done {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: var(--bg);
+  color: white;
+  font-size: 1.4rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 0.7rem;
+}
+
+.Invoice-arrow {
+  font-size: 1.4rem;
+  margin-left: 0.4rem;
+}
+
+.productname th {
+  text-align: left;
+  font-size: 15px;
+  padding: 0.2rem;
+}
+.productdetail td {
+  text-align: left;
+  font-size: 15px;
+  padding: 0.2rem;
+}
+.total {
+  font-size: 13px;
+  text-align: left;
+  margin-top: 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.total p {
+  margin: 0.5rem 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  text-align: right;
+  font-size: 18px;
+}
+.total span {
+  width: 30%;
+}
+.totalAmount {
+  font-size: 22px;
+  background: black;
+  color: white;
+  width: fit-content;
+  margin: auto;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  margin-top: 1rem;
+}
+p{
+  margin: 0;
+}
+.invoice-content {
+  padding: 1rem;
+  width: 30%;
+  margin: auto;
+}
+.invoice-content img {
+  height: 15rem;
+  width: 15rem;
+  display: flex;
+  margin: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse; /* Ensures borders collapse */
+  margin-top: 10px; /* Top margin similar to 'margin: [0, 10, 0, 0]' */
+}
+
+th,
+td {
+  border: 1px solid black; /* Add border to cells */
+  padding: 8px; /* Padding for table cells */
+  text-align: center; /* Center align for both headers and content */
+}
+
+td {
+  text-align: left;
+}
+th {
+  background-color: #f2f2f2; /* Optional: Add background color to header */
+}
+
+td:first-child {
+  width: 100%; /* Corresponds to '*' in widths */
+}
+
+td:nth-child(2),
+td:nth-child(3),
+td:nth-child(4) {
+  width: auto; /* Corresponds to 'auto' in widths */
+}

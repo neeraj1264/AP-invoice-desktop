@@ -1,0 +1,134 @@
+.history-container {
+  margin: 4rem .3rem;
+  font-family: Arial, sans-serif;
+}
+.back-arrow {
+  color: white;
+  font-size: 1.4rem !important;
+  position: relative;
+  top: 4px;
+}
+.header {
+  font-size: 1.4rem;
+  color: white;
+}
+.history-header {
+  text-align: center;
+  background: var(--bg);
+  color: white;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.5rem;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 2px 2px 6px 2px black;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0;
+  align-items: baseline;
+}
+
+h1,
+h2 {
+  color: #333;
+}
+.total-sale {
+  /* background: var(--bg); */
+  width: fit-content;
+  margin: auto;
+  padding: 0.4rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  /* box-shadow: 2px 2px 2px 2px var(--bg); */
+  font-weight: 700;
+}
+.total-sale select {
+     text-align: center;
+    padding: 0.5rem;
+    /* background: var(--bg); */
+    color: var(--bg);
+    font-weight: bold;
+    box-shadow: 2px 2px 8px var(--bg);
+    border: 3px solid var(--bg);
+}
+
+.details-table,
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.details-table th,
+.details-table td,
+.products-table th,
+.products-table td {
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.details-table th,
+.products-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.details-table td {
+  background-color: #f9f9f9;
+}
+
+.products-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.products-table tr:hover {
+  background-color: #f1f1f1;
+}
+.products-table th:nth-child(1), 
+.products-table td:nth-child(1) { 
+  width: 5%; 
+  text-align: center;
+}
+.products-table th:nth-child(2), 
+.products-table td:nth-child(2) { 
+  width: 50%; 
+  text-align: left;
+}
+.products-table th:nth-child(3), 
+.products-table td:nth-child(3) { 
+  width: 15%; 
+  text-align: right;
+}
+.products-table th:nth-child(4), 
+.products-table td:nth-child(4) { 
+  width: 10%; 
+  text-align: right;
+}
+.products-table th:nth-child(5), 
+.products-table td:nth-child(5) { 
+  width: 20%; 
+  text-align: right;
+}
+.amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4caf50;
+}
+
+hr{
+  margin: 1rem 0;
+  color: inherit;
+  border-top: var(--bs-border-width) solid;
+  opacity: .25;
+}
+.whatsapp {
+  position: absolute;
+  font-size: 2rem;
+  right: 2rem;
+  background-color: #25D366;
+  color: white;
+  border-radius: 50%;
+  padding: .3rem;
+  animation: pulsate 1s infinite;
+}
+

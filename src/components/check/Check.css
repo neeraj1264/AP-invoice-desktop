@@ -1,0 +1,35 @@
+  .title {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #f8b400; /* Highlighted color */
+  }
+  
+  .product-list {
+    list-style: none;
+    padding: 1px 0;
+    border-radius: 1rem;
+    background: white;
+    margin: 1rem 1rem 2rem;
+  }
+  
+  .product-item {
+    padding: 0 12px;
+    border-radius: 6px;
+    /* margin-bottom: 10px; */
+    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+    display: flex;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
+  .no-products {
+    text-align: center;
+    color: black;
+  }  
+  .hr {
+    border: none;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, black, black 10px, transparent 10px, transparent 20px);
+    margin: 10px 0;
+  }
