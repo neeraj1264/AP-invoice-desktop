@@ -30,6 +30,7 @@ const CustomerDetail = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [orders, setOrders] = useState([]);
   const deliveryChargeAmount = parseFloat(deliveryCharge) || 0;
+  const [billNumber, setBillNumber] = useState("");
 
   // State to hold all saved customers for auto-fill
   const [savedCustomers, setSavedCustomers] = useState([]);
@@ -193,6 +194,21 @@ const CustomerDetail = () => {
     navigate(-1);
   };
 
+  const generateNextBillNo = ()=>{
+    const today = new Date().toLocaleDateString("en-GB");       // "dd/mm/yyyy"
+    const storedDate = localStorage.getItem("billDate");
+    let nextNo = 1;
+
+    if (storedDate === today) {
+      nextNo = parseInt(localStorage.getItem("lastBillNo") || "0", 10) + 1;
+    }
+
+    localStorage.setItem("billDate", today);
+    localStorage.setItem("lastBillNo", nextNo);
+
+    return nextNo.toString().padStart(4, "0");
+}
+
   const handleSendClick = async () => {
     const { discountValue, netTotal } = computeTotals();
 
@@ -201,6 +217,8 @@ const CustomerDetail = () => {
       toast.error("Please add product before proceed", toastOptions);
       return; // Exit the function early
     }
+    const no = generateNextBillNo();
+    setBillNumber(no);
 
     setShowPopup(true);
 
@@ -535,9 +553,7 @@ const CustomerDetail = () => {
         </h2>
         <div className="customer-info">
           <p style={{ fontSize: "12px", margin: "0" }}>
-            Bill No:&nbsp;&nbsp;
-            {`#${Math.floor(1000 + Math.random() * 9000)}`}{" "}
-            {/* Random 6-digit bill number */}
+            Bill No:&nbsp;&nbsp;#{billNumber}
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
             OrderType&nbsp;:&nbsp;&nbsp; <span style={{ fontSize: "15px" , fontWeight: "bold"}}>{orderType}</span> 
