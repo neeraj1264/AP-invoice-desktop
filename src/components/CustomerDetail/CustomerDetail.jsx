@@ -505,18 +505,18 @@ const CustomerDetail = () => {
         ref={invoiceRef}
         style={{ display: "none" }}
       >
-        {/* {logoAvailable && (
+        {logoAvailable && (
           <img
-            src="/logo.jpg"
-            alt="Logo5"
+            src="/logo1.png"
+            alt="Logo"
             width={150}
             className="logo"
             onError={() => setLogoAvailable(false)}
           />
-        )} */}
-        <h1 style={{ textAlign: "center", margin: 0, fontSize: "35px" }}>
+        )}
+        {/* <h1 style={{ textAlign: "center", margin: 0, fontSize: "30px" }}>
           Apna Pizza
-        </h1>
+        </h1> */}
         <p
           style={{
             textAlign: "center",
@@ -527,7 +527,7 @@ const CustomerDetail = () => {
         >
           Karah Sahib Adda
           <br />
-          +91 99969-99799
+          +91 97298-12356
         </p>
         <hr />
         <h2 style={{ textAlign: "center", margin: 0, fontSize: "20px" }}>
@@ -540,7 +540,7 @@ const CustomerDetail = () => {
             {/* Random 6-digit bill number */}
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
-            OrderType&nbsp;:&nbsp;&nbsp; {orderType}
+            OrderType&nbsp;:&nbsp;&nbsp; <span style={{ fontSize: "15px" , fontWeight: "bold"}}>{orderType}</span> 
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
             Date:&nbsp;&nbsp;&nbsp;&nbsp;
@@ -606,7 +606,7 @@ const CustomerDetail = () => {
             <div className="total">
               <p style={{ margin: "1rem 0 0 0" }}>Item Total </p>
 
-              <p style={{ margin: "0" }}>
+              <p style={{ margin: "0 .5rem 0 0" }}>
                 ₹
                 {productsToSend
                   .reduce(
@@ -614,12 +614,12 @@ const CustomerDetail = () => {
                       sum + product.price * (product.quantity || 1),
                     0
                   )
-                  .toFixed(2)}
+                 }
               </p>
             </div>
             <div className="total">
               <p style={{ margin: "0" }}>Service Charge:</p>
-              <p style={{ margin: "0" }}>+{getdeliverycharge.toFixed(2)}</p>
+              <p style={{ margin: "0 .5rem 0 0"  }}>+{getdeliverycharge}</p>
             </div>
           </>
         )}
@@ -628,10 +628,10 @@ const CustomerDetail = () => {
             <p style={{ margin: 0 }}>
               Discount: {discountPercent > 0 && ` (${discountPercent}%)`}
             </p>
-            <p style={{ margin: "0" }}>–{discountValue.toFixed(2)}</p>
+            <p style={{ margin: "0 .5rem 0 0"  }}>–{discountValue}</p>
           </div>
         )}
-        <p className="totalAmount">Net Total: ₹{netTotal.toFixed(2)}</p> <hr />
+        <p className="totalAmount">Net Total: ₹{netTotal}</p> <hr />
         <div
           style={{
             textAlign: "center",
