@@ -648,62 +648,7 @@ input[type="checkbox"] {
   background-color: #ff0026; 
   font-weight: bold;
 }
-
-
-
-
-/* make them sit in a row */
-.order-type {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin: 1.5rem 0;
-}
-
-/* hide the native radio */
-.order-option input {
-  display: none;
-}
-
-/* the pill container */
-.order-option {
-  display: inline-block;
-}
-
-/* style the pill */
-.option-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #e67e22;
-  border-radius: 2rem;
-  padding: 0.5rem 1rem;
-  min-width: 4.5rem;
-  color: #e67e22;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-/* the “+” in the pill */
-.option-content strong {
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-/* the label text underneath */
-.option-content em {
-  font-style: normal;
-  font-size: 0.85rem;
-  margin-top: 0.1rem;
-}
-
-/* checked state */
-.order-option input:checked + .option-content {
-  background-color: var(--bg);
-  color: #fff;
-}
+ 
 
 .kot-btn{
   background-color: var(--bg); /* or your brand color */
@@ -724,4 +669,80 @@ input[type="checkbox"] {
   font-weight: bold;
   letter-spacing: 0.5px;
   color: white;
+}
+
+/* Container for the radio pills */
+.order-type {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Hide native radio input but keep it accessible */
+.order-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Base pill style */
+.order-option .option-content {
+  position: relative;
+  display: block;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border-radius: 999px;              /* fully rounded “pill” */
+  transition: all 0.2s ease;
+  background: #FFFFFF;               /* pure white base */
+  color: #333333;                    /* Darker text */
+  border: 2px solid #DDDDDD;         /* light grey border */
+  box-shadow:
+    inset 0 0 4px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover state: primary glow, accent text color */
+.order-option .option-content:hover {
+  box-shadow:
+    inset 0 0 6px rgba(237,102,41,0.2),
+    0 4px 8px rgba(237,102,41,0.1);
+  color: #ED6629;                    /* Primary text on hover */
+  border-color: #ED6629;
+}
+
+/* Checked state: solid primary fill, subtle glow */
+.order-option input[type="radio"]:checked + .option-content {
+  background: #ED6629;               /* Primary color */
+  border-color: #ED6629;
+  color: #FFFFFF;                    /* light text */
+  transform: translateY(1px) scale(1.02);
+  box-shadow:
+    0 0 8px rgba(237,102,41,0.4),
+    0 2px 6px rgba(237,102,41,0.2);
+}
+
+/* Optional: soft outline on checked */
+.order-option input[type="radio"]:checked + .option-content::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 999px;
+  border: 2px dashed rgba(237,102,41,0.5);
+  animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
 }
