@@ -254,8 +254,8 @@ const CustomerDetail = () => {
       await addItem("orders", order);
       await addItem("customers", customerDataObject);
       toast.info("You’re offline — order is saved locally ", toastOptions);
-      setShowPopup(false);
-      navigate("/invoice");
+      // setShowPopup(false);
+      // navigate("/invoice");
       return;
     }
     // ONLINE: send immediately
