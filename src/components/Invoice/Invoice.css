@@ -746,3 +746,36 @@ input[type="checkbox"] {
   0%, 100% { opacity: 0.3; }
   50%      { opacity: 1; }
 }
+
+
+.instruction-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 3000;
+}
+.instruction-modal {
+  background: white; padding: 1.5rem; border-radius: 0.5rem;
+  width: 90%; max-width: 320px;
+}
+.instruction-modal textarea {
+  width: 100%; border: 1px solid #ccc; border-radius: 0.25rem;
+  padding: 0.5rem; resize: vertical;
+}
+.instruction-actions {
+  margin-top: 0.75rem; display: flex; justify-content: flex-end; gap: 0.5rem;
+}
+.instruction-actions button {
+  padding: 0.5rem 1rem; border: none; border-radius: 0.25rem;
+  cursor: pointer;
+}
+.instruction-actions button:first-child { background: #eee; }
+.instruction-actions button:last-child {
+  background: #ED6629; color: white;
+}
+
+.kot-instruction {
+  font-style: italic;
+  margin: 0.25rem 0 0.5rem;
+  color: #ED6629;
+}

@@ -59,6 +59,9 @@ const Invoice = () => {
   // tracks which list to show in the modal
   const [modalType, setModalType] = useState("delivery"); // "delivery" or "dine-in"
 
+  const [kotInstructions, setKotInstructions] = useState("");
+  const [showInstructionPrompt, setShowInstructionPrompt] = useState(false);
+
   const openBillsModal = (type) => {
     setModalType(type);
     setShowKotModal(true);
@@ -87,25 +90,25 @@ const Invoice = () => {
   };
 
   useEffect(() => {
-  const interval = setInterval(() => setNow(Date.now()), 1000);
-  return () => clearInterval(interval);
-}, []);
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const EXPIRY_MS = 2 * 60 * 60 * 1000;
 
-useEffect(() => {
-  const cleanUp = (bills, setBills, storageKey) => {
-    const fresh = bills.filter(order => now - order.timestamp < EXPIRY_MS);
-    if (fresh.length !== bills.length) {
-      setBills(fresh);
-      localStorage.setItem(storageKey, JSON.stringify(fresh));
-    }
-  };
+  useEffect(() => {
+    const cleanUp = (bills, setBills, storageKey) => {
+      const fresh = bills.filter((order) => now - order.timestamp < EXPIRY_MS);
+      if (fresh.length !== bills.length) {
+        setBills(fresh);
+        localStorage.setItem(storageKey, JSON.stringify(fresh));
+      }
+    };
 
-  cleanUp(deliveryBills, setDeliveryBills, "deliveryKotData");
-  cleanUp(dineInBills,  setDineInBills,  "dineInKotData");
-  cleanUp(takeawayBills, setTakeawayBills, "takeawayKotData");
-}, [now, deliveryBills, dineInBills, takeawayBills]);
+    cleanUp(deliveryBills, setDeliveryBills, "deliveryKotData");
+    cleanUp(dineInBills, setDineInBills, "dineInKotData");
+    cleanUp(takeawayBills, setTakeawayBills, "takeawayKotData");
+  }, [now, deliveryBills, dineInBills, takeawayBills]);
 
   // Format milliseconds to HH:mm:ss
   const formatRemaining = (ms) => {
@@ -191,10 +194,10 @@ useEffect(() => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [categories]);
 
-  useEffect(()=>{
-     localStorage.removeItem("productsToSend");
-      setProductsToSend([]);
-  },[])
+  useEffect(() => {
+    localStorage.removeItem("productsToSend");
+    setProductsToSend([]);
+  }, []);
   useEffect(() => {
     const fromCustomerDetail = location.state?.from === "customer-detail";
     if (fromCustomerDetail) {
@@ -501,14 +504,20 @@ useEffect(() => {
   };
 
   // New: KOT (Kitchen Order Ticket) print handler
-  const handleKot = () => {
+  const handleKot = (instruction = "") => {
     // Append current order snapshot
     const kotEntry = {
       timestamp: Date.now(),
       date: new Date().toLocaleString(),
       items: productsToSend,
       orderType,
+      instruction,
     };
+
+    // inject instructions under the header:
+    const instructionHtml = instruction
+      ? `<div style="font-style:italic; margin-bottom:4px;">Instruction: ${instruction}</div>`
+      : "";
 
     if (orderType === "delivery") {
       const next = [...deliveryBills, kotEntry];
@@ -534,39 +543,39 @@ useEffect(() => {
       return;
     }
 
-//     const header = `
-//   <div style="text-align:center; font-weight:700; margin-bottom:8px;">
-//     ${orderType === "delivery" ? "Delivery" : "Dine-In"}
-//   </div>
-// `;
+    const header = `
+  <div style="text-align:center; font-weight:700; margin-bottom:8px;">
+    ${orderType === "delivery" ? "Delivery" : "Dine-In"}
+  </div>
+`;
 
-//     const printContent = header + printArea.innerHTML;
-//     const win = window.open("", "", "width=600,height=400");
-//     const style = `<style>
-//   @page { size: 48mm auto; margin:0; }
-//   @media print {
-//     body{ width:48mm; margin:0; padding:4mm; font-size:1rem; }
-//     .product-item{ display:flex; justify-content:space-between; margin-bottom:1rem;}
-//     .hr{ border:none; border-bottom:1px solid #000; margin:2px 0;}
-//     .invoice-btn{ display:none; }
-//   }
-// </style>`;
+    const printContent = header + instructionHtml + printArea.innerHTML;
+    const win = window.open("", "", "width=600,height=400");
+    const style = `<style>
+  @page { size: 48mm auto; margin:0; }
+  @media print {
+    body{ width:48mm; margin:0; padding:4mm; font-size:1rem; }
+    .product-item{ display:flex; justify-content:space-between; margin-bottom:1rem;}
+    .hr{ border:none; border-bottom:1px solid #000; margin:2px 0;}
+    .invoice-btn , .icon{ display:none; }
+  }
+</style>`;
 
-//     win.document.write(
-//       `<html>
-//       <head>
-//       <title>KOT Ticket</title>
-//      ${style}
-//         </head>
-//         <body>
-//         ${printContent}
-//         </body>
-//         </html>`
-//     );
-//     win.document.close();
-//     win.focus();
-//     win.print();
-//     win.close();
+    win.document.write(
+      `<html>
+      <head>
+      <title>KOT Ticket</title>
+     ${style}
+        </head>
+        <body>
+        ${printContent}
+        </body>
+        </html>`
+    );
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
   };
 
   const handleCreateInvoice = (orderItems, type) => {
@@ -831,36 +840,34 @@ useEffect(() => {
                         <span>{product.name}</span>
                       </div>
                       <div style={{ width: "20%", textAlign: "center" }}>
-                          <div className="quantity-btn">
-                                                  <button
-                                                    className="icon"
-                                                    onClick={() =>
-                                                      handleQuantityChange(
-                                                        product.name,
-                                                        product.price,
-                                                        -1
-                                                      )
-                                                    }
-                                                    // disabled={product.quantity <= 1}
-                                                  >
-                                                    <FaMinusCircle />
-                                                  </button>
-                                                  <span>
-                                                    {product.quantity}
-                                                  </span>
-                                                  <button
-                                                    className="icon"
-                                                    onClick={() =>
-                                                      handleQuantityChange(
-                                                        product.name,
-                                                        product.price,
-                                                        1
-                                                      )
-                                                    }
-                                                  >
-                                                    <FaPlusCircle />
-                                                  </button>
-                                                </div>
+                        <div className="quantity-btn">
+                          <button
+                            className="icon"
+                            onClick={() =>
+                              handleQuantityChange(
+                                product.name,
+                                product.price,
+                                -1
+                              )
+                            }
+                            // disabled={product.quantity <= 1}
+                          >
+                            <FaMinusCircle />
+                          </button>
+                          <span>{product.quantity}</span>
+                          <button
+                            className="icon"
+                            onClick={() =>
+                              handleQuantityChange(
+                                product.name,
+                                product.price,
+                                1
+                              )
+                            }
+                          >
+                            <FaPlusCircle />
+                          </button>
+                        </div>
                       </div>{" "}
                       <div style={{ width: "15%", textAlign: "right" }}>
                         <span>{product.price * product.quantity}</span>
@@ -926,11 +933,11 @@ useEffect(() => {
                 </div>
 
                 <button
-                  onClick={handleKot}
+                  onClick={() => setShowInstructionPrompt(true)}
                   className="kot-btn"
                   style={{ borderRadius: "0" }}
                 >
-                  <h2> Save </h2>
+                  <h2>Print KOT</h2>
                 </button>
               </>
             </div>
@@ -939,6 +946,40 @@ useEffect(() => {
           <p className="no-products">No products found </p>
         )}
       </div>
+
+      {showInstructionPrompt && (
+        <div className="instruction-overlay">
+          <div className="instruction-modal">
+            <h3>Any instructions for the kitchen?</h3>
+            <textarea
+              rows={3}
+              value={kotInstructions}
+              onChange={(e) => setKotInstructions(e.target.value)}
+              placeholder="E.g. Extra spicy, No garlic..."
+            />
+            <div className="instruction-actions">
+              <button
+                onClick={() => {
+                  setShowInstructionPrompt(false);
+                  setKotInstructions("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowInstructionPrompt(false);
+                  handleKot(kotInstructions);
+                  setKotInstructions("");
+                }}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="invoice-btn">
         <button onClick={guardAddProduct} className="invoice-kot-btn">
           <h2> + PRODUCT </h2>
@@ -989,7 +1030,7 @@ useEffect(() => {
                 ? dineInBills
                 : takeawayBills
               ).map((order, idx) => {
-                const remaining =  EXPIRY_MS - (now - order.timestamp);
+                const remaining = EXPIRY_MS - (now - order.timestamp);
                 return (
                   <div key={idx} className="kot-entry">
                     <h4 className="kot-timer">
@@ -999,6 +1040,11 @@ useEffect(() => {
                       KOT #{idx + 1}
                       <span className="kot-date">{order.date}</span>
                     </h4>
+                    {order.instruction && (
+                      <p className="kot-instruction">
+                        <strong>Note:</strong> {order.instruction}
+                      </p>
+                    )}
                     <ul>
                       {order.items.map((item, i) => (
                         <>
