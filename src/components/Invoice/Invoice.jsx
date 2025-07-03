@@ -543,9 +543,15 @@ const Invoice = () => {
       return;
     }
 
-    const header = `
+const header = `
   <div style="text-align:center; font-weight:700; margin-bottom:8px;">
-    ${orderType === "delivery" ? "Delivery" : "Dine-In"}
+    ${
+      orderType === "delivery"
+        ? "Delivery"
+        : orderType === "dine-in"
+          ? "Dine‑In"
+          : "Takeaway"
+    }
   </div>
 `;
 
