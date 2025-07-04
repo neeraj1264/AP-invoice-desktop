@@ -194,6 +194,15 @@ const History = () => {
     }
   };
 
+  useEffect(() => {
+    const isAdvancedEnabled =
+      localStorage.getItem("advancedFeature") === "true";
+
+    if (!isAdvancedEnabled) {
+      navigate("/invoice");
+    }
+  }, []);
+  
   return (
     <div>
       <Header headerName="Order History" />
@@ -342,7 +351,7 @@ const History = () => {
                         {/* DELIVERY ROW */}
                         {order.delivery > 0 && (
                           <tr>
-                            <td colSpan={4} style={{textAlign: "right"}}>
+                            <td colSpan={4} style={{ textAlign: "right" }}>
                               <strong>Delivery Charge:</strong>
                             </td>
                             <td style={{ textAlign: "right" }}>
@@ -353,8 +362,8 @@ const History = () => {
 
                         {/* DISCOUNT ROW */}
                         {order.discount > 0 && (
-                          <tr>                           
-                            <td colSpan={4} style={{textAlign: "right"}}>
+                          <tr>
+                            <td colSpan={4} style={{ textAlign: "right" }}>
                               <strong>Discount:</strong>
                             </td>
                             <td style={{ textAlign: "right" }}>
