@@ -15,20 +15,12 @@ import {
 import { IoMdCloseCircle } from "react-icons/io";
 import Header from "../header/Header";
 import { fetchProducts, removeProduct } from "../../api";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { IoClose } from "react-icons/io5";
 import { getAll, saveItems } from "../../DB";
 import { useOnlineStatus } from "../../useOnlineStatus";
 
-const toastOptions = {
-  position: "bottom-right",
-  autoClose: 2000,
-  pauseOnHover: true,
-  draggable: true,
-  theme: "dark",
-  width: "90%",
-};
 const Invoice = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [productsToSend, setProductsToSend] = useState([]);
@@ -84,7 +76,8 @@ const Invoice = () => {
     if (currentStatus) {
       navigate("/NewProduct");
     } else {
-      alert("You’re offline—cannot add a new product right now.");
+      toast.info(
+        "You’re offline—cannot add a new product right now.");
     }
     setIsChecking(false);
   };
@@ -543,14 +536,14 @@ const Invoice = () => {
       return;
     }
 
-const header = `
+    const header = `
   <div style="text-align:center; font-weight:700; margin-bottom:8px;">
     ${
       orderType === "delivery"
         ? "Delivery"
         : orderType === "dine-in"
-          ? "Dine‑In"
-          : "Takeaway"
+        ? "Dine‑In"
+        : "Takeaway"
     }
   </div>
 `;
@@ -643,7 +636,6 @@ const header = `
 
   return (
     <div>
-      <ToastContainer />
       <Header
         headerName="Urban Pizzeria"
         setSearch={setSearch}

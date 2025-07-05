@@ -7,19 +7,12 @@ import "./Customer.css";
 // import { handleScreenshotAsPDF } from "../Utils/DownloadPdf";
 import Header from "../header/Header";
 import { sendorder, setdata, fetchcustomerdata } from "../../api";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaWhatsapp } from "react-icons/fa6";
 import { IoPrint } from "react-icons/io5";
 import { addItem, getAll, saveItems } from "../../DB";
 
-const toastOptions = {
-  position: "bottom-right",
-  autoClose: 5000,
-  pauseOnHover: true,
-  draggable: true,
-  theme: "dark",
-};
 const CustomerDetail = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -214,7 +207,7 @@ const CustomerDetail = () => {
 
     const productsToSend = JSON.parse(localStorage.getItem("productsToSend"));
     if (!productsToSend || productsToSend.length === 0) {
-      toast.error("Please add product before proceed", toastOptions);
+      toast.error("Please add product before proceed");
       return; // Exit the function early
     }
     const no = generateNextBillNo();
@@ -253,7 +246,7 @@ const CustomerDetail = () => {
       // OFFLINE: just queue for later
       await addItem("orders", order);
       await addItem("customers", customerDataObject);
-      toast.info("You’re offline — order is saved locally ", toastOptions);
+      toast.info("You’re offline — order is saved locally ");
       // setShowPopup(false);
       // navigate("/invoice");
       return;
@@ -266,7 +259,7 @@ const CustomerDetail = () => {
     } catch (err) {
       await addItem("orders", order);
       console.error("Error sending online order:", err);
-      toast.info("You’re offline — order is saved locally ", toastOptions);
+      toast.info("You’re offline — order is saved locally ");
     }
   };
 
@@ -404,7 +397,6 @@ const CustomerDetail = () => {
 
   return (
     <div>
-      <ToastContainer />
       <Header />
       <div className="cust-inputs" style={{ marginTop: "4rem" }}>
         <input

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL, fetchOrders, removeOrder, sendorder } from "../../api";
 import Header from "../header/Header";
 import { clearStore, deleteItem, getAll, saveItems } from "../../DB";
+import { toast } from "react-toastify";
 
 const History = () => {
   const [orders, setOrders] = useState([]);
@@ -65,8 +66,7 @@ const History = () => {
 
         console.log("Order removed successfully from both MongoDB and state");
       } else {
-        alert("Advance feature not granted.");
-        navigate("/advance");
+        toast.error("Advance feature not granted.");
       }
     } catch (error) {
       console.error("Error removing order:", error.message);
@@ -202,187 +202,187 @@ const History = () => {
       navigate("/invoice");
     }
   }, []);
-  
-  return (
-    <div>
-      <Header headerName="Order History" />
-      {loading ? (
-        <div className="lds-ripple">
-          <div></div>
-          <div></div>
-        </div>
-      ) : (
-        <>
-          <div
-            className="sync-container"
-            style={{ position: "absolute", right: "1rem" }}
-          >
-            <button
-              onClick={syncOfflineOrders}
-              disabled={syncing}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "8px",
-                background: syncing ? "#ccc" : "#4caf50",
-                color: "#fff",
-                border: "none",
-                cursor: syncing ? "default" : "pointer",
-                marginTop: "1rem",
-              }}
-            >
-              {syncing ? "Syncing…" : "Sync Offline Orders"}
-            </button>
-          </div>
 
-          <div className="history-container">
-            <div className="grand-total">
-              <h2 className="total-sale">
-                <select
-                  id="filter"
-                  value={filter}
-                  onChange={handleFilterChange}
-                  style={{ borderRadius: "1rem" }}
-                >
-                  <option value="Today">
-                    Today ₹
-                    {orders
-                      .filter(
-                        (order) =>
-                          new Date(order.timestamp).toLocaleDateString() ===
-                          new Date().toLocaleDateString()
-                      )
-                      .reduce((sum, order) => sum + order.totalAmount, 0)}
-                  </option>
-                  <option value="Yesterday">
-                    Yesterday ₹
-                    {orders
-                      .filter((order) => {
-                        const orderDate = new Date(order.timestamp);
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        return (
-                          orderDate.toLocaleDateString() ===
-                          yesterday.toLocaleDateString()
-                        );
-                      })
-                      .reduce((sum, order) => sum + order.totalAmount, 0)}
-                  </option>
-                  {[...Array(6)].map((_, i) => (
-                    <option key={i} value={`${i + 2} days ago`}>
-                      {i + 2} days ago ₹
+  return (
+      <div>
+        <Header headerName="Order History" />
+        {loading ? (
+          <div className="lds-ripple">
+            <div></div>
+            <div></div>
+          </div>
+        ) : (
+          <>
+            <div
+              className="sync-container"
+              style={{ position: "absolute", right: "1rem" }}
+            >
+              <button
+                onClick={syncOfflineOrders}
+                disabled={syncing}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "8px",
+                  background: syncing ? "#ccc" : "#4caf50",
+                  color: "#fff",
+                  border: "none",
+                  cursor: syncing ? "default" : "pointer",
+                  marginTop: "1rem",
+                }}
+              >
+                {syncing ? "Syncing…" : "Sync Offline Orders"}
+              </button>
+            </div>
+
+            <div className="history-container">
+              <div className="grand-total">
+                <h2 className="total-sale">
+                  <select
+                    id="filter"
+                    value={filter}
+                    onChange={handleFilterChange}
+                    style={{ borderRadius: "1rem" }}
+                  >
+                    <option value="Today">
+                      Today ₹
+                      {orders
+                        .filter(
+                          (order) =>
+                            new Date(order.timestamp).toLocaleDateString() ===
+                            new Date().toLocaleDateString()
+                        )
+                        .reduce((sum, order) => sum + order.totalAmount, 0)}
+                    </option>
+                    <option value="Yesterday">
+                      Yesterday ₹
                       {orders
                         .filter((order) => {
                           const orderDate = new Date(order.timestamp);
-                          const filterDate = new Date();
-                          filterDate.setDate(filterDate.getDate() - (i + 2));
+                          const yesterday = new Date();
+                          yesterday.setDate(yesterday.getDate() - 1);
                           return (
                             orderDate.toLocaleDateString() ===
-                            filterDate.toLocaleDateString()
+                            yesterday.toLocaleDateString()
                           );
                         })
                         .reduce((sum, order) => sum + order.totalAmount, 0)}
                     </option>
-                  ))}
-                </select>
-              </h2>
-            </div>
+                    {[...Array(6)].map((_, i) => (
+                      <option key={i} value={`${i + 2} days ago`}>
+                        {i + 2} days ago ₹
+                        {orders
+                          .filter((order) => {
+                            const orderDate = new Date(order.timestamp);
+                            const filterDate = new Date();
+                            filterDate.setDate(filterDate.getDate() - (i + 2));
+                            return (
+                              orderDate.toLocaleDateString() ===
+                              filterDate.toLocaleDateString()
+                            );
+                          })
+                          .reduce((sum, order) => sum + order.totalAmount, 0)}
+                      </option>
+                    ))}
+                  </select>
+                </h2>
+              </div>
 
-            {filteredOrders.length > 0 ? (
-              [...filteredOrders].reverse().map((order, index) => (
-                <div
-                  key={order.id}
-                  className="order-section"
-                  onMouseDown={handlePressStart}
-                  onMouseUp={handlePressEnd}
-                  onTouchStart={handlePressStart}
-                  onTouchEnd={handlePressEnd}
-                >
-                  <hr />
-                  <div onClick={() => toggleOrder(order.id)}>
-                    <h2 style={{ cursor: "pointer", fontSize: "1rem" }}>
-                      Order {filteredOrders.length - index} -{" "}
-                      <span>{formatDate(order.timestamp)}</span>
-                    </h2>
-                    <p>
-                      <strong>Amount Received: ₹{order.totalAmount}</strong>{" "}
-                      {order.phone && (
-                        <FaWhatsapp
-                          className="whatsapp"
-                          onClick={() => handleWhatsappClick(order)}
-                        />
-                      )}{" "}
-                    </p>
-                    {showRemoveBtn && (
-                      <button
-                        className="remove-btn"
-                        onClick={() => handleRemoveOrder(order.id)}
-                      >
-                        Remove Order
-                      </button>
+              {filteredOrders.length > 0 ? (
+                [...filteredOrders].reverse().map((order, index) => (
+                  <div
+                    key={order.id}
+                    className="order-section"
+                    onMouseDown={handlePressStart}
+                    onMouseUp={handlePressEnd}
+                    onTouchStart={handlePressStart}
+                    onTouchEnd={handlePressEnd}
+                  >
+                    <hr />
+                    <div onClick={() => toggleOrder(order.id)}>
+                      <h2 style={{ cursor: "pointer", fontSize: "1rem" }}>
+                        Order {filteredOrders.length - index} -{" "}
+                        <span>{formatDate(order.timestamp)}</span>
+                      </h2>
+                      <p>
+                        <strong>Amount Received: ₹{order.totalAmount}</strong>{" "}
+                        {order.phone && (
+                          <FaWhatsapp
+                            className="whatsapp"
+                            onClick={() => handleWhatsappClick(order)}
+                          />
+                        )}{" "}
+                      </p>
+                      {showRemoveBtn && (
+                        <button
+                          className="remove-btn"
+                          onClick={() => handleRemoveOrder(order.id)}
+                        >
+                          Remove Order
+                        </button>
+                      )}
+                    </div>
+
+                    {expandedOrderId === order.id && ( // Render table only if this order is expanded
+                      <table className="products-table">
+                        <thead>
+                          <tr>
+                            <th>No.</th>
+                            <th>Items</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {order.products.map((product, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}.</td>
+                              <td>
+                                {product.size
+                                  ? `${product.name} (${product.size})`
+                                  : product.name}
+                              </td>
+                              <td>{product.price}</td>
+                              <td>{product.quantity}</td>
+                              <td>{product.price * product.quantity}</td>
+                            </tr>
+                          ))}
+
+                          {/* DELIVERY ROW */}
+                          {order.delivery > 0 && (
+                            <tr>
+                              <td colSpan={4} style={{ textAlign: "right" }}>
+                                <strong>Delivery Charge:</strong>
+                              </td>
+                              <td style={{ textAlign: "right" }}>
+                                <strong>+{order.delivery}</strong>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* DISCOUNT ROW */}
+                          {order.discount > 0 && (
+                            <tr>
+                              <td colSpan={4} style={{ textAlign: "right" }}>
+                                <strong>Discount:</strong>
+                              </td>
+                              <td style={{ textAlign: "right" }}>
+                                <strong>-{order.discount}</strong>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     )}
                   </div>
-
-                  {expandedOrderId === order.id && ( // Render table only if this order is expanded
-                    <table className="products-table">
-                      <thead>
-                        <tr>
-                          <th>No.</th>
-                          <th>Items</th>
-                          <th>Price</th>
-                          <th>Qty</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {order.products.map((product, idx) => (
-                          <tr key={idx}>
-                            <td>{idx + 1}.</td>
-                            <td>
-                              {product.size
-                                ? `${product.name} (${product.size})`
-                                : product.name}
-                            </td>
-                            <td>{product.price}</td>
-                            <td>{product.quantity}</td>
-                            <td>{product.price * product.quantity}</td>
-                          </tr>
-                        ))}
-
-                        {/* DELIVERY ROW */}
-                        {order.delivery > 0 && (
-                          <tr>
-                            <td colSpan={4} style={{ textAlign: "right" }}>
-                              <strong>Delivery Charge:</strong>
-                            </td>
-                            <td style={{ textAlign: "right" }}>
-                              <strong>+{order.delivery}</strong>
-                            </td>
-                          </tr>
-                        )}
-
-                        {/* DISCOUNT ROW */}
-                        {order.discount > 0 && (
-                          <tr>
-                            <td colSpan={4} style={{ textAlign: "right" }}>
-                              <strong>Discount:</strong>
-                            </td>
-                            <td style={{ textAlign: "right" }}>
-                              <strong>-{order.discount}</strong>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p>No orders found for {filter.toLowerCase()}.</p>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+                ))
+              ) : (
+                <p>No orders found for {filter.toLowerCase()}.</p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
   );
 };
 

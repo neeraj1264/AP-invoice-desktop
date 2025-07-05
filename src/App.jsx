@@ -11,6 +11,7 @@ import AddToHomeModal from "./components/AddToHome/AddToHome";
 import Advance from "./components/advance/Advance";
 import OrderReport from "./OrderReport";
 import Check from "./components/check/Check";
+import { toast } from "react-toastify";
 
 
 const App = () => {
@@ -57,7 +58,10 @@ const App = () => {
       setIsPasswordCorrect(true);
       setShowPasswordPopup(false); // Close the password popup
     } else {
-      alert("Incorrect password. Please try again.");
+        toast.error(
+        "Incorrect password. Please try again."
+      );
+      // alert("Incorrect password. Please try again.");
     }
   };
 

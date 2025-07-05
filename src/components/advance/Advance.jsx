@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Advance.css";
 import { useNavigate } from "react-router-dom";
 import Header from "../header/Header";
+import { toast } from "react-toastify";
 
 const Advance = ({ orders, setOrders }) => {
   const [showPasswordPopup, setShowPasswordPopup] = useState(false);
@@ -38,9 +39,9 @@ const Advance = ({ orders, setOrders }) => {
       setNormalCheckboxState(true);
       localStorage.setItem("advancedFeature", "true");
       localStorage.setItem("passwordCorrect", "true");
-      alert("Access granted!");
+      toast.info("Access granted!");
     } else {
-      alert("Incorrect password. Try again.");
+      toast.error("Incorrect password. Try again.");
     }
   };
 
@@ -51,7 +52,7 @@ const Advance = ({ orders, setOrders }) => {
       setAdvancedCheckboxState(false);
       setIsAdvancedAccessGranted(false);
       localStorage.removeItem("advancedFeature");
-      alert("Access removed!");
+      toast.info("Access removed!");
     } else {
       // Check logic
       setShowPasswordPopup(true); // Show password popup

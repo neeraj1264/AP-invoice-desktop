@@ -17,9 +17,7 @@ function Check() {
   const handleDone = () => {
     if (products.length === 0) {
       toast.error(
-        "Please add at least one product before proceeding.",
-        toastOptions
-      );
+        "Please add at least one product before proceeding.");
       return; // Prevent navigation if no products are selected
     }
 
