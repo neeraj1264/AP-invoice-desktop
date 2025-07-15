@@ -23,7 +23,10 @@ const CustomerDetail = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [orders, setOrders] = useState([]);
   const deliveryChargeAmount = parseFloat(deliveryCharge) || 0;
-  const [billNumber, setBillNumber] = useState("");
+  const location = useLocation();
+  // destructure billNo (and orderType) out of the navigation state
+  const { billNo } = location.state || {};
+  const [billNumber, setbillNumber] = useState(billNo || "");
 
   // State to hold all saved customers for auto-fill
   const [savedCustomers, setSavedCustomers] = useState([]);
@@ -147,7 +150,7 @@ const CustomerDetail = () => {
       ? `Service Charge +${deliveryChargeAmount}` // No extra newline
       : "";
 
-    const orderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const orderId = `ORD-${billNumber}`;
 
     // Build the WhatsApp message in the same order as the invoice
     let msg = `Order-ID: *${orderId}*\n`;
@@ -187,21 +190,6 @@ const CustomerDetail = () => {
     navigate(-1);
   };
 
-  const generateNextBillNo = ()=>{
-    const today = new Date().toLocaleDateString("en-GB");       // "dd/mm/yyyy"
-    const storedDate = localStorage.getItem("billDate");
-    let nextNo = 1;
-
-    if (storedDate === today) {
-      nextNo = parseInt(localStorage.getItem("lastBillNo") || "0", 10) + 1;
-    }
-
-    localStorage.setItem("billDate", today);
-    localStorage.setItem("lastBillNo", nextNo);
-
-    return nextNo.toString().padStart(4, "0");
-}
-
   const handleSendClick = async () => {
     const { discountValue, netTotal } = computeTotals();
 
@@ -210,8 +198,6 @@ const CustomerDetail = () => {
       toast.error("Please add product before proceed");
       return; // Exit the function early
     }
-    const no = generateNextBillNo();
-    setBillNumber(no);
 
     setShowPopup(true);
 

@@ -34,6 +34,7 @@ const Invoice = () => {
 
   const { isOnline, checkBackend } = useOnlineStatus();
   const [isChecking, setIsChecking] = useState(false);
+  const [editingBillNo, setEditingBillNo] = useState(null);
 
   // default to “delivery”
   const [orderType, setOrderType] = useState("delivery");
@@ -199,32 +200,44 @@ const Invoice = () => {
     }
   }, [location]);
 
-  // Load products from localStorage on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const products = await fetchProducts(); // Use the function from api.js
-        setSelectedProducts(products);
-        await saveItems("products", products);
-        setLoading(false);
-      } catch (err) {
-        console.warn("Fetch failed, loading from IDB:", err);
-        const prods = await getAll("products");
-        setSelectedProducts(prods);
-        setLoading(false);
-      }
-    };
+ useEffect(() => {
+  let cancelled = false;
 
-    fetchData();
+  async function hydrateFromIDB() {
+    try {
+      const offline = await getAll("products");
+      if (cancelled) return;
+      setSelectedProducts(offline);
+    } catch (err) {
+      console.error("Error loading from IDB:", err);
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  }
 
-    const storedProductsToSend =
-      JSON.parse(localStorage.getItem("productsToSend")) || [];
-    setProductsToSend(storedProductsToSend);
+  async function refreshFromServer() {
+    try {
+      const products = await fetchProducts();
+      if (cancelled) return;
+      setSelectedProducts(products);
+      await saveItems("products", products);
+    } catch (err) {
+      console.warn("Server fetch failed, keeping IDB data:", err);
+    }
+  }
 
-    localStorage.removeItem("deliveryCharge");
+  hydrateFromIDB();      // 1️⃣ immediately populate from IDB & hide spinner
+  refreshFromServer();   // 2️⃣ then update in background
 
-    // setSelectedVariety([]);
-  }, []);
+  // also restore the cart‑to‑send list
+  const stored = JSON.parse(localStorage.getItem("productsToSend")) || [];
+  setProductsToSend(stored);
+  localStorage.removeItem("deliveryCharge");
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   // Persist cart to IDB whenever it changes
   useEffect(() => {
@@ -496,10 +509,34 @@ const Invoice = () => {
     return [];
   };
 
+localStorage.getItem("kotCounter");
+
   // New: KOT (Kitchen Order Ticket) print handler
   const handleKot = (instruction = "") => {
+
+    const todayKey = new Date().toLocaleDateString();
+    const counter = JSON.parse(localStorage.getItem("kotCounter")) || { date: todayKey, lastNo: 0 };
+    let nextNo;
+  
+    if (editingBillNo) {
+      // we’re re‐printing an edited ticket: reuse its original number
+      nextNo = editingBillNo;
+    } else {
+      // brand‐new KOT: bump (or reset) the counter
+      nextNo = counter.date === todayKey ? counter.lastNo + 1 : 1;
+      localStorage.setItem(
+        "kotCounter",
+        JSON.stringify({ date: todayKey, lastNo: nextNo })
+      );
+    }
+  
+    // after we’ve captured it, clear edit mode so only this one re‐print reuses it
+    setEditingBillNo(null);
+
+    const billNo = String(nextNo).padStart(4, "0");
     // Append current order snapshot
     const kotEntry = {
+      billNo:     billNo,
       timestamp: Date.now(),
       date: new Date().toLocaleString(),
       items: productsToSend,
@@ -538,6 +575,7 @@ const Invoice = () => {
 
     const header = `
   <div style="text-align:center; font-weight:700; margin-bottom:8px;">
+  Bill No. ${billNo}
     ${
       orderType === "delivery"
         ? "Delivery"
@@ -579,10 +617,10 @@ const Invoice = () => {
 
   const handleCreateInvoice = (orderItems, type) => {
     // save the items and the order type
-    localStorage.setItem("productsToSend", JSON.stringify(orderItems));
+    localStorage.setItem("productsToSend", JSON.stringify(orderItems.items));
     localStorage.setItem("orderType", type);
     // also pass via react-router state (optional, but nice)
-    navigate("/customer-detail", { state: { orderType: type } });
+    navigate("/customer-detail", { state: { orderType: type, billNo: orderItems.billNo, } });
     setShowKotModal(false);
   };
 
@@ -603,6 +641,10 @@ const Invoice = () => {
   };
 
   const editKot = (order, idx) => {
+
+    // Grab this ticket’s number into state
+      setEditingBillNo(order.billNo);
+
     // Remove from the correct list
     if (modalType === "delivery") {
       const updated = deliveryBills.filter((_, i) => i !== idx);
@@ -619,8 +661,8 @@ const Invoice = () => {
     }
 
     // Load into current products
-    setProductsToSend(order);
-    localStorage.setItem("productsToSend", JSON.stringify(order));
+    setProductsToSend(order.items);
+    localStorage.setItem("productsToSend", JSON.stringify(order.items));
     setShowKotModal(false);
   };
 
@@ -1035,7 +1077,7 @@ const Invoice = () => {
                       Bill Expire in <span>{formatRemaining(remaining)}</span>
                     </h4>
                     <h4>
-                      KOT #{idx + 1}
+                       Bill No. {order.billNo}
                       <span className="kot-date">{order.date}</span>
                     </h4>
                     {order.instruction && (
@@ -1066,13 +1108,13 @@ const Invoice = () => {
                       <FaEdit
                         className="edit-action-icon action-icon"
                         size={20}
-                        onClick={() => editKot(order.items, idx)}
+                        onClick={() => editKot(order, idx)}
                       />
                       <FaFileInvoice
                         className="invoice-action-icon action-icon"
                         size={20}
                         onClick={() =>
-                          handleCreateInvoice(order.items, modalType)
+                          handleCreateInvoice(order, modalType)
                         }
                       />
                     </div>
