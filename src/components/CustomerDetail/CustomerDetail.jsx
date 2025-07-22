@@ -6,7 +6,7 @@ import { handleScreenshot } from "../Utils/DownloadPng"; // Import the function
 import "./Customer.css";
 // import { handleScreenshotAsPDF } from "../Utils/DownloadPdf";
 import Header from "../header/Header";
-import { sendorder, setdata, fetchcustomerdata } from "../../api";
+import { sendorder, setdata, fetchcustomerdata, fetchOrders } from "../../api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaWhatsapp } from "react-icons/fa6";
@@ -38,6 +38,9 @@ const CustomerDetail = () => {
 
   const invoiceRef = useRef(); // Reference to the hidden invoice content
   const navigate = useNavigate();
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateOrderInfo, setDuplicateOrderInfo] = useState(null); // in minutes
+  const [pendingOrder, setPendingOrder] = useState(null); // { order, customer }
 
   useEffect(() => {
     // Load selected products and total amount from localStorage
@@ -190,6 +193,28 @@ const CustomerDetail = () => {
     navigate(-1);
   };
 
+  function normalizeSignature(products) {
+    const items = products
+      .map((p) => ({
+        name: p.name,
+        size: p.size || "",
+        price: p.price,
+        quantity: p.quantity,
+      }))
+      .sort((a, b) => (a.name + a.size).localeCompare(b.name + b.size));
+    return JSON.stringify(items);
+  }
+
+  async function getAllOrders() {
+    if (navigator.onLine) {
+      // fetch from server
+      return await fetchOrders();
+    } else {
+      // fetch from IndexedDB
+      return await getAll("orders");
+    }
+  }
+
   const handleSendClick = async () => {
     const { discountValue, netTotal } = computeTotals();
 
@@ -205,6 +230,7 @@ const CustomerDetail = () => {
       localStorage.setItem("deliveryCharge", deliveryCharge);
     }
 
+    const now = new Date();
     const orderId = `order_${Date.now()}`;
 
     // Create an order object
@@ -219,7 +245,7 @@ const CustomerDetail = () => {
       discount: discountAmount,
       timestamp: new Date().toISOString(),
     };
-    console.log("order created", order);
+
     const customerDataObject = {
       id: orderId,
       name: customerName,
@@ -228,15 +254,69 @@ const CustomerDetail = () => {
       timestamp: new Date().toISOString(),
     };
 
+    // ✅ 1. If Offline, save immediately
     if (!navigator.onLine) {
-      // OFFLINE: just queue for later
       await addItem("orders", order);
       await addItem("customers", customerDataObject);
       toast.info("You’re offline — order is saved locally ");
-      // setShowPopup(false);
-      // navigate("/invoice");
       return;
     }
+
+    // ✅ STEP 2: Now safe to fetch orders online
+    let allOrders = [];
+    try {
+      allOrders = await getAllOrders();
+    } catch (err) {
+      console.warn("Failed to fetch orders. Assuming offline.");
+      await addItem("orders", order);
+      await addItem("customers", customerDataObject);
+      toast.info("You’re offline — order saved locally.");
+      return;
+    }
+
+    // 3. check for any duplicate in the last hour, but also grab the matching order
+
+    const newSig = normalizeSignature(productsToSend);
+
+    let prevMatch = null;
+    const ONE_HOUR = 1000 * 60 * 60;
+
+    // find the first duplicate
+    for (let o of allOrders) {
+      if (!o.products) continue;
+      const sig = normalizeSignature(o.products);
+      if (sig === newSig) {
+        const prevTime = Date.parse(o.timestamp);
+        const diffMs = now.getTime() - prevTime;
+
+        if (diffMs > 0 && diffMs <= ONE_HOUR) {
+          prevMatch = { order: o, diffMs };
+          break;
+        }
+      }
+    }
+
+    if (prevMatch) {
+      // compute minutes (rounded)
+      const minutesAgo = Math.round(prevMatch.diffMs / (1000 * 60));
+
+      setDuplicateOrderInfo(minutesAgo);
+      setPendingOrder({ order, customer: customerDataObject });
+      setShowDuplicateModal(true);
+      return;
+    }
+
+    console.log("order created", order);
+    // if (!navigator.onLine) {
+    //   // OFFLINE: just queue for later
+    //   await addItem("orders", order);
+    //   await addItem("customers", customerDataObject);
+    //   toast.info("You’re offline — order is saved locally ");
+    //   // setShowPopup(false);
+    //   // navigate("/invoice");
+    //   return;
+    // }
+
     // ONLINE: send immediately
     setShowPopup(true);
     try {
@@ -534,7 +614,10 @@ const CustomerDetail = () => {
             Bill No:&nbsp;&nbsp;#{billNumber}
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
-            OrderType&nbsp;:&nbsp;&nbsp; <span style={{ fontSize: "15px" , fontWeight: "bold"}}>{orderType}</span> 
+            OrderType&nbsp;:&nbsp;&nbsp;{" "}
+            <span style={{ fontSize: "15px", fontWeight: "bold" }}>
+              {orderType}
+            </span>
           </p>
           <p style={{ fontSize: "12px", margin: "0" }}>
             Date:&nbsp;&nbsp;&nbsp;&nbsp;
@@ -602,18 +685,16 @@ const CustomerDetail = () => {
 
               <p style={{ margin: "0 .5rem 0 0" }}>
                 ₹
-                {productsToSend
-                  .reduce(
-                    (sum, product) =>
-                      sum + product.price * (product.quantity || 1),
-                    0
-                  )
-                 }
+                {productsToSend.reduce(
+                  (sum, product) =>
+                    sum + product.price * (product.quantity || 1),
+                  0
+                )}
               </p>
             </div>
             <div className="total">
               <p style={{ margin: "0" }}>Service Charge:</p>
-              <p style={{ margin: "0 .5rem 0 0"  }}>+{getdeliverycharge}</p>
+              <p style={{ margin: "0 .5rem 0 0" }}>+{getdeliverycharge}</p>
             </div>
           </>
         )}
@@ -622,7 +703,7 @@ const CustomerDetail = () => {
             <p style={{ margin: 0 }}>
               Discount: {discountPercent > 0 && ` (${discountPercent}%)`}
             </p>
-            <p style={{ margin: "0 .5rem 0 0"  }}>–{discountValue}</p>
+            <p style={{ margin: "0 .5rem 0 0" }}>–{discountValue}</p>
           </div>
         )}
         <p className="totalAmount">Net Total: ₹{netTotal}</p> <hr />
@@ -674,6 +755,55 @@ const CustomerDetail = () => {
             <button onClick={handleClosePopup} style={styles.popupCloseButton}>
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {showPopup && !showDuplicateModal && (
+        <div className="action-popup-overlay">
+          <div className="action-popup-content">
+            {/* your WhatsApp / Download / Print buttons */}
+          </div>
+        </div>
+      )}
+
+      {/* 2) Duplicate‑order modal (on top of everything) */}
+      {showDuplicateModal && (
+        <div className="duplicate-modal-overlay">
+          <div className="duplicate-modal-content">
+            <h2>Duplicate Order Detected</h2>
+            <p>
+              This exact order was placed <strong>{duplicateOrderInfo}</strong>{" "}
+              minute
+              {duplicateOrderInfo === 1 ? "" : "s"} ago.
+            </p>
+            <p>Do you still want to save it again?</p>
+            <div className="duplicate-modal-buttons">
+              <button
+                onClick={() => {
+                  setShowDuplicateModal(false);
+                  setPendingOrder(null);
+                }}
+              >
+                Print Only
+              </button>
+              <button
+                onClick={async () => {
+                  setShowDuplicateModal(false);
+                  if (pendingOrder) {
+                    try {
+                      await sendorder(pendingOrder.order);
+                      await setdata(pendingOrder.customer);
+                    } catch {
+                      await addItem("orders", pendingOrder.order);
+                      toast.info("System Offline! order will Saved offline");
+                    }
+                  }
+                }}
+              >
+                Print & Save
+              </button>
+            </div>
           </div>
         </div>
       )}
