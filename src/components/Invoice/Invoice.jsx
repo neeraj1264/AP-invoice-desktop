@@ -615,6 +615,56 @@ localStorage.getItem("kotCounter");
     win.close();
   };
 
+   const saveKot = () => {
+
+    const todayKey = new Date().toLocaleDateString();
+    const counter = JSON.parse(localStorage.getItem("kotCounter")) || { date: todayKey, lastNo: 0 };
+    let nextNo;
+  
+    if (editingBillNo) {
+      // we’re re‐printing an edited ticket: reuse its original number
+      nextNo = editingBillNo;
+    } else {
+      // brand‐new KOT: bump (or reset) the counter
+      nextNo = counter.date === todayKey ? counter.lastNo + 1 : 1;
+      localStorage.setItem(
+        "kotCounter",
+        JSON.stringify({ date: todayKey, lastNo: nextNo })
+      );
+    }
+  
+    // after we’ve captured it, clear edit mode so only this one re‐print reuses it
+    setEditingBillNo(null);
+
+    const billNo = String(nextNo).padStart(4, "0");
+    // Append current order snapshot
+    const kotEntry = {
+      billNo:     billNo,
+      timestamp: Date.now(),
+      date: new Date().toLocaleString(),
+      items: productsToSend,
+      orderType,
+    };
+
+    if (orderType === "delivery") {
+      const next = [...deliveryBills, kotEntry];
+      setDeliveryBills(next);
+      localStorage.setItem("deliveryKotData", JSON.stringify(next));
+    } else if (orderType === "dine-in") {
+      const next = [...dineInBills, kotEntry];
+      setDineInBills(next);
+      localStorage.setItem("dineInKotData", JSON.stringify(next));
+    } else if (orderType === "takeaway") {
+      const next = [...takeawayBills, kotEntry];
+      setTakeawayBills(next);
+      localStorage.setItem("takeawayKotData", JSON.stringify(next));
+    }
+
+    // Clear current productsToSend
+    setProductsToSend([]);
+    localStorage.setItem("productsToSend", JSON.stringify([]));
+  };
+
   const handleCreateInvoice = (orderItems, type) => {
     // save the items and the order type
     localStorage.setItem("productsToSend", JSON.stringify(orderItems.items));
@@ -972,6 +1022,7 @@ localStorage.getItem("kotCounter");
                   ))}
                 </div>
 
+                  <div style={{display: "flex" , justifyContent: "space-around"}}>
                 <button
                   onClick={() => setShowInstructionPrompt(true)}
                   className="kot-btn"
@@ -979,6 +1030,16 @@ localStorage.getItem("kotCounter");
                 >
                   <h2>Print KOT</h2>
                 </button>
+
+                  <button
+                  onClick={() => saveKot()}
+                  className="kot-btn"
+                  style={{ borderRadius: "0" }}
+                >
+                  <h2>Save KOT</h2>
+                </button>
+                </div>
+
               </>
             </div>
           </div>

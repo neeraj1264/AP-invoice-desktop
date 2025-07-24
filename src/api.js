@@ -1,5 +1,5 @@
 export const BASE_URL = 'https://apna-pizza-backend.vercel.app/api'; 
-// export const BASE_URL = "https://invoice-backend-7czy.vercel.app/api"; 
+// export const BASE_URL = "https://invoice-backend-phi.vercel.app/api"; 
 
 export const fetchCategories = async () => {
   const response = await fetch(`${BASE_URL}/categories`);

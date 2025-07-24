@@ -583,7 +583,7 @@ const CustomerDetail = () => {
       >
         {logoAvailable && (
           <img
-            src="/logo1.png"
+            src="/logo3.jpg"
             alt="Logo"
             width={150}
             className="logo"
