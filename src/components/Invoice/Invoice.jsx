@@ -686,7 +686,7 @@ localStorage.getItem("kotCounter");
     } else if (modalType === "takeaway") {
       const updated = takeawayBills.filter((_, i) => i !== idx);
       setTakeawayBills(updated);
-      localStorage.setItem("TakeAwayKotData", JSON.stringify(updated));
+      localStorage.setItem("takeawayKotData", JSON.stringify(updated));
     }
   };
 
@@ -707,7 +707,7 @@ localStorage.getItem("kotCounter");
     } else if (modalType === "takeaway") {
       const updated = takeawayBills.filter((_, i) => i !== idx);
       setTakeawayBills(updated);
-      localStorage.setItem("TakeAwayKotData", JSON.stringify(updated));
+      localStorage.setItem("takeawayKotData", JSON.stringify(updated));
     }
 
     // Load into current products
