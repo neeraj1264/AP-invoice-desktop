@@ -809,9 +809,9 @@ localStorage.getItem("kotCounter");
                                 <p className="p-name-price">
                                   Rs.{" "}
                                   {product.price
-                                    ? product.price.toFixed(2) // Use product price if it exists
+                                    ? product.price // Use product price if it exists
                                     : product.varieties.length > 0
-                                    ? product.varieties[0].price.toFixed(2) // Fallback to first variety price
+                                    ? product.varieties[0].price // Fallback to first variety price
                                     : "N/A"}{" "}
                                   {/* Handle case when neither price nor varieties are available */}
                                   {showRemoveBtn && (
